@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Scanner Kehadiran SK Seri Serdang</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 25px 15px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #eef5fc;
+      color: #222;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      margin: 0;
+      color: #1976d2;
+      font-size: 32px;
+    }
+
+    h2 {
+      margin: 6px 0 25px;
+      font-size: 22px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 22px;
+      padding: 25px 18px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.10);
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 16px 28px;
+      background: #1976d2;
+      color: white;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+
+    #status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 19px;
+      font-weight: bold;
+    }
+
+    .info {
+      background: #e8f1fb;
+      color: #1976d2;
+    }
+
+    .success {
+      background: #e8f5e9;
+      color: #188038;
+    }
+
+    .error {
+      background: #ffebee;
+      color: #d93025;
+    }
+
+    .student {
+      margin-top: 20px;
+      padding: 22px 15px;
+      border-radius: 16px;
+      background: #e8f5e9;
+    }
+
+    .nama {
+      font-size: 27px;
+      font-weight: bold;
+      color: #188038;
+    }
+
+    .detail {
+      margin-top: 9px;
+      font-size: 19px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>📱 SCANNER KEHADIRAN</h1>
+  <h2>SK SERI SERDANG</h2>
+
+  <div class="card">
+
+    <button id="startButton" onclick="mulaScan()">
+      📷 MULA SCAN
+    </button>
+
+    <div id="reader"></div>
+
+    <div id="status" class="info">
+      Tekan MULA SCAN untuk mula.
+    </div>
+
+    <div id="result"></div>
+
+    <button
+      id="againButton"
+      onclick="mulaScan()"
+      style="display:none;">
+      📷 SCAN MURID SETERUSNYA
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbwitDfnRPryNPcRFfnoEMy0EES5lhlXucLMbPO7Bt5Kq_Ib97HzBSSUKqtthOEuUDirsQ/exec";
+
+let scanner = null;
+let sedangProses = false;
+
+
+// ==========================================
+// MULA SCAN
+// ==========================================
+
+function mulaScan() {
+
+  if (sedangProses) {
+    return;
+  }
+
+  sedangProses = true;
+
+  document.getElementById("startButton")
+    .style.display = "none";
+
+  document.getElementById("againButton")
+    .style.display = "none";
+
+  document.getElementById("result")
+    .innerHTML = "";
+
+  document.getElementById("status")
+    .className = "info";
+
+  document.getElementById("status")
+    .innerHTML = "📷 Membuka kamera...";
+
+
+  scanner = new Html5Qrcode("reader");
+
+
+  scanner.start(
+
+    {
+      facingMode: "environment"
+    },
+
+    {
+      fps: 10,
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+    },
+
+    function(decodedText) {
+
+      hentikanKamera();
+
+      prosesQR(decodedText);
+
+    },
+
+    function(errorMessage) {
+
+      // Abaikan sementara QR belum dikesan.
+
+    }
+
+  ).catch(function(error) {
+
+    console.error(error);
+
+    sedangProses = false;
+
+    document.getElementById("status")
+      .className = "error";
+
+    document.getElementById("status")
+      .innerHTML =
+      "❌ Kamera tidak dapat dibuka.";
+
+    document.getElementById("startButton")
+      .style.display = "inline-block";
+
+  });
+
+}
+
+
+// ==========================================
+// HENTIKAN KAMERA
+// ==========================================
+
+function hentikanKamera() {
+
+  if (!scanner) {
+    return;
+  }
+
+  scanner.stop()
+    .then(function() {
+
+      document.getElementById("reader")
+        .innerHTML = "";
+
+    })
+    .catch(function() {
+
+      document.getElementById("reader")
+        .innerHTML = "";
+
+    });
+
+}
+
+
+// ==========================================
+// PROSES QR
+// ==========================================
+
+function prosesQR(qrID) {
+
+  document.getElementById("status")
+    .className = "info";
+
+  document.getElementById("status")
+    .innerHTML =
+    "⏳ QR dikesan. Sedang semak murid...";
+
+
+  const callbackName =
+    "hasilScan_" + Date.now();
+
+
+  window[callbackName] =
+    function(response) {
+
+      paparKeputusan(response);
+
+      delete window[callbackName];
+
+      const script =
+        document.getElementById(callbackName);
+
+      if (script) {
+        script.remove();
+      }
+
+    };
+
+
+  const script =
+    document.createElement("script");
+
+
+  script.id = callbackName;
+
+
+  script.src =
+    API_URL +
+    "?qr=" +
+    encodeURIComponent(qrID) +
+    "&callback=" +
+    callbackName;
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      script.remove();
+
+      document.getElementById("status")
+        .className = "error";
+
+      document.getElementById("status")
+        .innerHTML =
+        "❌ Sistem tidak dapat dihubungi.";
+
+      resetScanner();
+
+    };
+
+
+  document.body.appendChild(script);
+
+}
+
+
+// ==========================================
+// PAPAR KEPUTUSAN
+// ==========================================
+
+function paparKeputusan(response) {
+
+  if (!response) {
+
+    document.getElementById("status")
+      .className = "error";
+
+    document.getElementById("status")
+      .innerHTML =
+      "❌ Tiada respons daripada sistem.";
+
+    resetScanner();
+
+    return;
+  }
+
+
+  if (response.already) {
+
+    document.getElementById("status")
+      .className = "error";
+
+    document.getElementById("status")
+      .innerHTML =
+      "⚠️ SUDAH DIREKOD HARI INI";
+
+    paparMurid(response);
+
+    return;
+  }
+
+
+  if (!response.success) {
+
+    document.getElementById("status")
+      .className = "error";
+
+    document.getElementById("status")
+      .innerHTML =
+      "❌ MURID TIDAK DIJUMPAI";
+
+
+    document.getElementById("result")
+      .innerHTML =
+      "<div class='student'>" +
+      "<div class='detail'>" +
+      escapeHtml(response.message) +
+      "</div>" +
+      "</div>";
+
+
+    resetScanner();
+
+    return;
+  }
+
+
+  document.getElementById("status")
+    .className = "success";
+
+  document.getElementById("status")
+    .innerHTML =
+    "✅ KEHADIRAN BERJAYA DIREKOD";
+
+
+  paparMurid(response);
+
+}
+
+
+// ==========================================
+// PAPAR MURID
+// ==========================================
+
+function paparMurid(response) {
+
+  document.getElementById("result")
+    .innerHTML =
+
+    "<div class='student'>" +
+
+    "<div class='nama'>" +
+    escapeHtml(response.nama) +
+    "</div>" +
+
+    "<div class='detail'>" +
+    "Kelas: " +
+    escapeHtml(response.kelas) +
+    "</div>" +
+
+    "<div class='detail'>" +
+    "Tahun: " +
+    escapeHtml(response.tahun) +
+    "</div>" +
+
+    "<div class='detail'>" +
+    "RMT: " +
+    escapeHtml(response.rmt) +
+    "</div>" +
+
+    "<div class='detail'>" +
+    "🕐 " +
+    escapeHtml(response.masa) +
+    "</div>" +
+
+    "<div class='detail'>" +
+    "✅ HADIR" +
+    "</div>" +
+
+    "</div>";
+
+  resetScanner();
+
+}
+
+
+// ==========================================
+// RESET
+// ==========================================
+
+function resetScanner() {
+
+  sedangProses = false;
+
+  document.getElementById("againButton")
+    .style.display = "inline-block";
+
+}
+
+
+// ==========================================
+// ESCAPE HTML
+// ==========================================
+
+function escapeHtml(text) {
+
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+</script>
+
+</body>
+</html>
