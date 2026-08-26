@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -49,20 +50,66 @@
       border: 0;
       border-radius: 13px;
       padding: 16px 28px;
-      background: #1976d2;
       color: white;
       font-size: 19px;
       font-weight: bold;
       cursor: pointer;
+      margin-top: 10px;
     }
 
-    #reader {
+    button:active {
+      transform: scale(.97);
+    }
+
+    .blue {
+      background: #1976d2;
+    }
+
+    .purple {
+      background: #8e24aa;
+    }
+
+    .green {
+      background: #188038;
+    }
+
+    .red {
+      background: #d93025;
+    }
+
+    .gray {
+      background: #757575;
+    }
+
+    #reader,
+    #photoReader {
       width: 100%;
       max-width: 500px;
       margin: 20px auto;
     }
 
-    #status {
+    #photoCamera {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px auto;
+      border-radius: 18px;
+      background: #111;
+    }
+
+    #photoPreview {
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      border-radius: 18px;
+      display: none;
+    }
+
+    #photoCanvas {
+      display: none;
+    }
+
+    #status,
+    #photoStatus {
       margin-top: 20px;
       padding: 15px;
       border-radius: 12px;
@@ -92,10 +139,18 @@
       background: #e8f5e9;
     }
 
+    .photoStudent {
+      background: #f3e5f5;
+    }
+
     .nama {
       font-size: 27px;
       font-weight: bold;
       color: #188038;
+    }
+
+    .photoStudent .nama {
+      color: #8e24aa;
     }
 
     .detail {
@@ -103,6 +158,24 @@
       font-size: 19px;
       font-weight: bold;
     }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .modeTitle {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 16px;
+      color: #666;
+      line-height: 1.5;
+    }
+
   </style>
 </head>
 
@@ -111,28 +184,201 @@
 <div class="container">
 
   <h1>📱 SCANNER KEHADIRAN</h1>
+
   <h2>SK SERI SERDANG</h2>
+
 
   <div class="card">
 
-    <button id="startButton" onclick="mulaScan()">
-      📷 MULA SCAN
-    </button>
 
-    <div id="reader"></div>
+    <!-- =====================================================
+         MENU UTAMA
+         ===================================================== -->
 
-    <div id="status" class="info">
-      Tekan MULA SCAN untuk mula.
+    <div id="mainMenu">
+
+      <button
+        class="blue"
+        onclick="mulaScan()">
+
+        📷 MULA SCAN KEHADIRAN
+
+      </button>
+
+      <br>
+
+      <button
+        class="purple"
+        onclick="mulaModeGambar()">
+
+        📸 AMBIL / KEMAS KINI GAMBAR MURID
+
+      </button>
+
     </div>
 
-    <div id="result"></div>
 
-    <button
-      id="againButton"
-      onclick="mulaScan()"
-      style="display:none;">
-      📷 SCAN MURID SETERUSNYA
-    </button>
+    <!-- =====================================================
+         MODE KEHADIRAN
+         ===================================================== -->
+
+    <div id="attendanceMode"
+         class="hidden">
+
+      <div class="modeTitle">
+        📷 SCAN KEHADIRAN
+      </div>
+
+      <div id="reader"></div>
+
+      <div id="status"
+           class="info">
+
+        Tekan mula scan.
+
+      </div>
+
+      <div id="result"></div>
+
+      <button
+        id="againButton"
+        class="blue"
+        onclick="mulaScan()"
+        style="display:none;">
+
+        📷 SCAN MURID SETERUSNYA
+
+      </button>
+
+      <br>
+
+      <button
+        class="gray"
+        onclick="kembaliMenu()">
+
+        ↩️ KEMBALI
+
+      </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         MODE GAMBAR
+         ===================================================== -->
+
+    <div id="photoMode"
+         class="hidden">
+
+      <div class="modeTitle">
+        📸 GAMBAR MURID
+      </div>
+
+      <div id="photoStatus"
+           class="info">
+
+        Scan QR murid untuk cari pelajar.
+
+      </div>
+
+
+      <!-- QR SCANNER GAMBAR -->
+
+      <div id="photoReader"></div>
+
+
+      <!-- MAKLUMAT MURID -->
+
+      <div id="photoStudent"
+           class="student photoStudent hidden">
+
+        <div id="photoName"
+             class="nama">
+        </div>
+
+        <div id="photoDetail"
+             class="detail">
+        </div>
+
+      </div>
+
+
+      <!-- KAMERA -->
+
+      <video
+        id="photoCamera"
+        autoplay
+        playsinline
+        class="hidden">
+      </video>
+
+
+      <canvas id="photoCanvas"></canvas>
+
+
+      <!-- PREVIEW -->
+
+      <img
+        id="photoPreview"
+        alt="Preview gambar murid">
+
+
+      <div
+        id="photoNote"
+        class="note hidden">
+
+        Pastikan muka murid jelas dan berada di tengah kamera.
+
+      </div>
+
+
+      <!-- AMBIL -->
+
+      <button
+        id="captureButton"
+        class="red hidden"
+        onclick="ambilGambar()">
+
+        📸 AMBIL GAMBAR
+
+      </button>
+
+
+      <!-- SIMPAN -->
+
+      <button
+        id="saveButton"
+        class="green hidden"
+        onclick="simpanGambar()">
+
+        💾 SIMPAN GAMBAR
+
+      </button>
+
+
+      <!-- AMBIL SEMULA -->
+
+      <button
+        id="retakeButton"
+        class="red hidden"
+        onclick="ambilSemula()">
+
+        🔄 AMBIL SEMULA
+
+      </button>
+
+
+      <br>
+
+      <button
+        class="gray"
+        onclick="kembaliMenu()">
+
+        ↩️ KEMBALI
+
+      </button>
+
+    </div>
 
   </div>
 
@@ -141,42 +387,71 @@
 
 <script>
 
+
+// ============================================================
+// API APPS SCRIPT
+// ============================================================
+
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbwitDfnRPryNPcRFfnoEMy0EES5lhlXucLMbPO7Bt5Kq_Ib97HzBSSUKqtthOEuUDirsQ/exec";
+  "https://script.google.com/macros/s/AKfycbw58lowucrJWunN2Bgs_FC0A9wB6CxGjkvU7APuh-QSxnjpsBa7ET-gPAjTkvQ39srwoQ/exec";
+
+
+// ============================================================
+// PEMBOLEH UBAH
+// ============================================================
 
 let scanner = null;
+
+let photoScanner = null;
+
 let sedangProses = false;
 
+let photoStream = null;
 
-// ==========================================
-// MULA SCAN
-// ==========================================
+let muridUntukGambar = null;
+
+let gambarBase64 = null;
+
+
+// ============================================================
+// MULA SCAN KEHADIRAN
+// ============================================================
 
 function mulaScan() {
 
-  if (sedangProses) {
-    return;
-  }
+  hentikanSemuaKamera();
+
+  document.getElementById("mainMenu")
+    .classList.add("hidden");
+
+  document.getElementById("photoMode")
+    .classList.add("hidden");
+
+  document.getElementById("attendanceMode")
+    .classList.remove("hidden");
+
 
   sedangProses = true;
 
-  document.getElementById("startButton")
-    .style.display = "none";
 
   document.getElementById("againButton")
     .style.display = "none";
 
+
   document.getElementById("result")
     .innerHTML = "";
+
 
   document.getElementById("status")
     .className = "info";
 
   document.getElementById("status")
-    .innerHTML = "📷 Membuka kamera...";
+    .innerHTML =
+      "📷 Membuka kamera...";
 
 
-  scanner = new Html5Qrcode("reader");
+  scanner =
+    new Html5Qrcode("reader");
 
 
   scanner.start(
@@ -187,15 +462,17 @@ function mulaScan() {
 
     {
       fps: 10,
+
       qrbox: {
         width: 250,
         height: 250
       }
+
     },
 
     function(decodedText) {
 
-      hentikanKamera();
+      hentikanScanner();
 
       prosesQR(decodedText);
 
@@ -203,7 +480,7 @@ function mulaScan() {
 
     function(errorMessage) {
 
-      // Abaikan sementara QR belum dikesan.
+      // Abaikan QR yang belum dikesan.
 
     }
 
@@ -218,46 +495,56 @@ function mulaScan() {
 
     document.getElementById("status")
       .innerHTML =
-      "❌ Kamera tidak dapat dibuka.";
-
-    document.getElementById("startButton")
-      .style.display = "inline-block";
+        "❌ Kamera tidak dapat dibuka.<br>" +
+        "Sila benarkan akses kamera.";
 
   });
 
 }
 
 
-// ==========================================
-// HENTIKAN KAMERA
-// ==========================================
+// ============================================================
+// HENTIKAN SCANNER KEHADIRAN
+// ============================================================
 
-function hentikanKamera() {
+function hentikanScanner() {
 
   if (!scanner) {
     return;
   }
 
-  scanner.stop()
-    .then(function() {
+  try {
 
-      document.getElementById("reader")
-        .innerHTML = "";
+    scanner.stop()
+      .then(function() {
 
-    })
-    .catch(function() {
+        scanner = null;
 
-      document.getElementById("reader")
-        .innerHTML = "";
+        document.getElementById("reader")
+          .innerHTML = "";
 
-    });
+      })
+      .catch(function() {
+
+        scanner = null;
+
+        document.getElementById("reader")
+          .innerHTML = "";
+
+      });
+
+  } catch (e) {
+
+    scanner = null;
+
+  }
 
 }
 
 
-// ==========================================
-// PROSES QR
-// ==========================================
+// ============================================================
+// PROSES QR KEHADIRAN
+// ============================================================
 
 function prosesQR(qrID) {
 
@@ -266,7 +553,7 @@ function prosesQR(qrID) {
 
   document.getElementById("status")
     .innerHTML =
-    "⏳ QR dikesan. Sedang semak murid...";
+      "⏳ QR dikesan. Sedang semak murid...";
 
 
   const callbackName =
@@ -299,7 +586,8 @@ function prosesQR(qrID) {
 
   script.src =
     API_URL +
-    "?qr=" +
+    "?action=scan" +
+    "&qr=" +
     encodeURIComponent(qrID) +
     "&callback=" +
     callbackName;
@@ -317,7 +605,7 @@ function prosesQR(qrID) {
 
       document.getElementById("status")
         .innerHTML =
-        "❌ Sistem tidak dapat dihubungi.";
+          "❌ Sistem tidak dapat dihubungi.";
 
       resetScanner();
 
@@ -329,9 +617,9 @@ function prosesQR(qrID) {
 }
 
 
-// ==========================================
-// PAPAR KEPUTUSAN
-// ==========================================
+// ============================================================
+// PAPAR KEPUTUSAN KEHADIRAN
+// ============================================================
 
 function paparKeputusan(response) {
 
@@ -342,11 +630,12 @@ function paparKeputusan(response) {
 
     document.getElementById("status")
       .innerHTML =
-      "❌ Tiada respons daripada sistem.";
+        "❌ Tiada respons daripada sistem.";
 
     resetScanner();
 
     return;
+
   }
 
 
@@ -357,11 +646,12 @@ function paparKeputusan(response) {
 
     document.getElementById("status")
       .innerHTML =
-      "⚠️ SUDAH DIREKOD HARI INI";
+        "⚠️ SUDAH DIREKOD HARI INI";
 
     paparMurid(response);
 
     return;
+
   }
 
 
@@ -372,21 +662,22 @@ function paparKeputusan(response) {
 
     document.getElementById("status")
       .innerHTML =
-      "❌ MURID TIDAK DIJUMPAI";
+        "❌ MURID TIDAK DIJUMPAI";
 
 
     document.getElementById("result")
       .innerHTML =
-      "<div class='student'>" +
-      "<div class='detail'>" +
-      escapeHtml(response.message) +
-      "</div>" +
-      "</div>";
+        "<div class='student'>" +
+        "<div class='detail'>" +
+        escapeHtml(response.message) +
+        "</div>" +
+        "</div>";
 
 
     resetScanner();
 
     return;
+
   }
 
 
@@ -395,7 +686,7 @@ function paparKeputusan(response) {
 
   document.getElementById("status")
     .innerHTML =
-    "✅ KEHADIRAN BERJAYA DIREKOD";
+      "✅ KEHADIRAN BERJAYA DIREKOD";
 
 
   paparMurid(response);
@@ -403,55 +694,56 @@ function paparKeputusan(response) {
 }
 
 
-// ==========================================
-// PAPAR MURID
-// ==========================================
+// ============================================================
+// PAPAR MURID KEHADIRAN
+// ============================================================
 
 function paparMurid(response) {
 
   document.getElementById("result")
     .innerHTML =
 
-    "<div class='student'>" +
+      "<div class='student'>" +
 
-    "<div class='nama'>" +
-    escapeHtml(response.nama) +
-    "</div>" +
+      "<div class='nama'>" +
+      escapeHtml(response.nama) +
+      "</div>" +
 
-    "<div class='detail'>" +
-    "Kelas: " +
-    escapeHtml(response.kelas) +
-    "</div>" +
+      "<div class='detail'>" +
+      "Kelas: " +
+      escapeHtml(response.kelas) +
+      "</div>" +
 
-    "<div class='detail'>" +
-    "Tahun: " +
-    escapeHtml(response.tahun) +
-    "</div>" +
+      "<div class='detail'>" +
+      "Tahun: " +
+      escapeHtml(response.tahun) +
+      "</div>" +
 
-    "<div class='detail'>" +
-    "RMT: " +
-    escapeHtml(response.rmt) +
-    "</div>" +
+      "<div class='detail'>" +
+      "RMT: " +
+      escapeHtml(response.rmt) +
+      "</div>" +
 
-    "<div class='detail'>" +
-    "🕐 " +
-    escapeHtml(response.masa) +
-    "</div>" +
+      "<div class='detail'>" +
+      "🕐 " +
+      escapeHtml(response.masa) +
+      "</div>" +
 
-    "<div class='detail'>" +
-    "✅ HADIR" +
-    "</div>" +
+      "<div class='detail'>" +
+      "✅ HADIR" +
+      "</div>" +
 
-    "</div>";
+      "</div>";
+
 
   resetScanner();
 
 }
 
 
-// ==========================================
-// RESET
-// ==========================================
+// ============================================================
+// RESET SCANNER
+// ============================================================
 
 function resetScanner() {
 
@@ -463,17 +755,762 @@ function resetScanner() {
 }
 
 
-// ==========================================
+// ============================================================
+// MODE GAMBAR
+// ============================================================
+
+function mulaModeGambar() {
+
+  hentikanSemuaKamera();
+
+  document.getElementById("mainMenu")
+    .classList.add("hidden");
+
+  document.getElementById("attendanceMode")
+    .classList.add("hidden");
+
+  document.getElementById("photoMode")
+    .classList.remove("hidden");
+
+
+  resetModeGambar();
+
+
+  mulaScanQRGambar();
+
+}
+
+
+// ============================================================
+// RESET MODE GAMBAR
+// ============================================================
+
+function resetModeGambar() {
+
+  muridUntukGambar = null;
+
+  gambarBase64 = null;
+
+
+  document.getElementById("photoStudent")
+    .classList.add("hidden");
+
+
+  document.getElementById("photoCamera")
+    .classList.add("hidden");
+
+
+  document.getElementById("photoPreview")
+    .style.display = "none";
+
+
+  document.getElementById("photoNote")
+    .classList.add("hidden");
+
+
+  document.getElementById("captureButton")
+    .classList.add("hidden");
+
+
+  document.getElementById("saveButton")
+    .classList.add("hidden");
+
+
+  document.getElementById("retakeButton")
+    .classList.add("hidden");
+
+
+  document.getElementById("photoStatus")
+    .className = "info";
+
+
+  document.getElementById("photoStatus")
+    .innerHTML =
+      "Scan QR murid untuk cari pelajar.";
+
+
+  document.getElementById("photoReader")
+    .innerHTML = "";
+
+}
+
+
+// ============================================================
+// SCAN QR UNTUK MODE GAMBAR
+// ============================================================
+
+function mulaScanQRGambar() {
+
+  document.getElementById("photoStatus")
+    .className = "info";
+
+  document.getElementById("photoStatus")
+    .innerHTML =
+      "📷 Membuka kamera scan QR...";
+
+
+  photoScanner =
+    new Html5Qrcode("photoReader");
+
+
+  photoScanner.start(
+
+    {
+      facingMode: "environment"
+    },
+
+    {
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+
+    },
+
+    function(decodedText) {
+
+      hentikanPhotoScanner();
+
+      cariMuridUntukGambar(decodedText);
+
+    },
+
+    function(errorMessage) {
+
+      // Abaikan QR belum dikesan.
+
+    }
+
+  ).catch(function(error) {
+
+    console.error(error);
+
+    document.getElementById("photoStatus")
+      .className = "error";
+
+    document.getElementById("photoStatus")
+      .innerHTML =
+        "❌ Kamera QR tidak dapat dibuka.";
+
+  });
+
+}
+
+
+// ============================================================
+// HENTIKAN SCANNER GAMBAR
+// ============================================================
+
+function hentikanPhotoScanner() {
+
+  if (!photoScanner) {
+    return;
+  }
+
+  try {
+
+    photoScanner.stop()
+      .then(function() {
+
+        photoScanner = null;
+
+        document.getElementById("photoReader")
+          .innerHTML = "";
+
+      })
+      .catch(function() {
+
+        photoScanner = null;
+
+        document.getElementById("photoReader")
+          .innerHTML = "";
+
+      });
+
+  } catch (e) {
+
+    photoScanner = null;
+
+  }
+
+}
+
+
+// ============================================================
+// CARI MURID UNTUK GAMBAR
+// PENTING: action=photo
+// TIDAK REKOD KEHADIRAN
+// ============================================================
+
+function cariMuridUntukGambar(qrID) {
+
+  document.getElementById("photoStatus")
+    .className = "info";
+
+  document.getElementById("photoStatus")
+    .innerHTML =
+      "⏳ Sedang mencari murid...";
+
+
+  const callbackName =
+    "hasilPhoto_" + Date.now();
+
+
+  window[callbackName] =
+    function(response) {
+
+      paparMuridGambar(response);
+
+      delete window[callbackName];
+
+      const script =
+        document.getElementById(callbackName);
+
+      if (script) {
+        script.remove();
+      }
+
+    };
+
+
+  const script =
+    document.createElement("script");
+
+
+  script.id = callbackName;
+
+
+  script.src =
+    API_URL +
+    "?action=photo" +
+    "&qr=" +
+    encodeURIComponent(qrID) +
+    "&callback=" +
+    callbackName;
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      script.remove();
+
+      document.getElementById("photoStatus")
+        .className = "error";
+
+      document.getElementById("photoStatus")
+        .innerHTML =
+        "❌ Sistem tidak dapat dihubungi.";
+
+    };
+
+
+  document.body.appendChild(script);
+
+}
+
+
+// ============================================================
+// PAPAR MURID UNTUK GAMBAR
+// ============================================================
+
+function paparMuridGambar(response) {
+
+  if (!response || !response.success) {
+
+    document.getElementById("photoStatus")
+      .className = "error";
+
+    document.getElementById("photoStatus")
+      .innerHTML =
+        "❌ MURID TIDAK DIJUMPAI";
+
+    return;
+
+  }
+
+
+  muridUntukGambar = response;
+
+
+  document.getElementById("photoName")
+    .innerHTML =
+      escapeHtml(response.nama);
+
+
+  document.getElementById("photoDetail")
+    .innerHTML =
+      "ID: " +
+      escapeHtml(response.id) +
+      "<br>" +
+      "Kelas: " +
+      escapeHtml(response.kelas) +
+      "<br>" +
+      "Tahun: " +
+      escapeHtml(response.tahun);
+
+
+  document.getElementById("photoStudent")
+    .classList.remove("hidden");
+
+
+  document.getElementById("photoStatus")
+    .className = "success";
+
+  document.getElementById("photoStatus")
+    .innerHTML =
+      "✅ MURID DIJUMPAI";
+
+
+  bukaKameraGambar();
+
+}
+
+
+// ============================================================
+// BUKA KAMERA DEPAN
+// ============================================================
+
+function bukaKameraGambar() {
+
+  navigator.mediaDevices
+    .getUserMedia({
+
+      video: {
+        facingMode: "user"
+      },
+
+      audio: false
+
+    })
+
+    .then(function(stream) {
+
+      photoStream = stream;
+
+
+      const video =
+        document.getElementById("photoCamera");
+
+
+      video.srcObject = stream;
+
+      video.classList.remove("hidden");
+
+
+      document.getElementById("photoNote")
+        .classList.remove("hidden");
+
+
+      document.getElementById("captureButton")
+        .classList.remove("hidden");
+
+    })
+
+    .catch(function(error) {
+
+      console.error(error);
+
+      document.getElementById("photoStatus")
+        .className = "error";
+
+      document.getElementById("photoStatus")
+        .innerHTML =
+        "❌ Kamera gambar tidak dapat dibuka.<br>" +
+        "Sila benarkan akses kamera.";
+
+    });
+
+}
+
+
+// ============================================================
+// AMBIL GAMBAR
+// ============================================================
+
+function ambilGambar() {
+
+  if (!muridUntukGambar) {
+
+    alert("Murid belum dipilih.");
+
+    return;
+
+  }
+
+
+  const video =
+    document.getElementById("photoCamera");
+
+  const canvas =
+    document.getElementById("photoCanvas");
+
+
+  let width =
+    video.videoWidth;
+
+  let height =
+    video.videoHeight;
+
+
+  if (!width || !height) {
+
+    alert("Kamera belum bersedia.");
+
+    return;
+
+  }
+
+
+  // Hadkan saiz gambar supaya fail tidak terlalu besar
+
+  const maxWidth = 800;
+
+
+  if (width > maxWidth) {
+
+    height =
+      Math.round(
+        height * maxWidth / width
+      );
+
+    width = maxWidth;
+
+  }
+
+
+  canvas.width = width;
+
+  canvas.height = height;
+
+
+  const context =
+    canvas.getContext("2d");
+
+
+  context.drawImage(
+    video,
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  gambarBase64 =
+    canvas.toDataURL(
+      "image/jpeg",
+      0.75
+    );
+
+
+  document.getElementById("photoPreview")
+    .src = gambarBase64;
+
+
+  document.getElementById("photoPreview")
+    .style.display = "block";
+
+
+  hentikanKameraGambar();
+
+
+  video.classList.add("hidden");
+
+
+  document.getElementById("captureButton")
+    .classList.add("hidden");
+
+
+  document.getElementById("saveButton")
+    .classList.remove("hidden");
+
+
+  document.getElementById("retakeButton")
+    .classList.remove("hidden");
+
+
+  document.getElementById("photoNote")
+    .innerHTML =
+      "Gambar sudah diambil. Semak dahulu sebelum simpan.";
+
+}
+
+
+// ============================================================
+// AMBIL SEMULA
+// ============================================================
+
+function ambilSemula() {
+
+  gambarBase64 = null;
+
+
+  document.getElementById("photoPreview")
+    .style.display = "none";
+
+
+  document.getElementById("saveButton")
+    .classList.add("hidden");
+
+
+  document.getElementById("retakeButton")
+    .classList.add("hidden");
+
+
+  bukaKameraGambar();
+
+}
+
+
+// ============================================================
+// SIMPAN GAMBAR
+// ============================================================
+
+function simpanGambar() {
+
+  if (!muridUntukGambar) {
+
+    alert("Murid belum dipilih.");
+
+    return;
+
+  }
+
+
+  if (!gambarBase64) {
+
+    alert("Sila ambil gambar dahulu.");
+
+    return;
+
+  }
+
+
+  const saveButton =
+    document.getElementById("saveButton");
+
+
+  saveButton.disabled = true;
+
+
+  document.getElementById("photoStatus")
+    .className = "info";
+
+  document.getElementById("photoStatus")
+    .innerHTML =
+      "💾 Sedang menyimpan gambar...";
+
+
+  const fileName =
+    muridUntukGambar.id +
+    "_" +
+    muridUntukGambar.nama
+      .replace(/[^a-zA-Z0-9_-]/g, "_") +
+    ".jpg";
+
+
+  const payload = {
+
+    row:
+      muridUntukGambar.row,
+
+    base64Data:
+      gambarBase64,
+
+    fileName:
+      fileName
+
+  };
+
+
+  fetch(
+    API_URL,
+    {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "text/plain;charset=utf-8"
+      },
+
+      body:
+        JSON.stringify(payload)
+
+    }
+
+  )
+
+  .then(function(response) {
+
+    return response.text();
+
+  })
+
+  .then(function(text) {
+
+    let result;
+
+    try {
+
+      result =
+        JSON.parse(text);
+
+    } catch (e) {
+
+      throw new Error(
+        "Respons server tidak sah."
+      );
+
+    }
+
+
+    if (!result.success) {
+
+      throw new Error(
+        result.message ||
+        "Gambar gagal disimpan."
+      );
+
+    }
+
+
+    document.getElementById("photoStatus")
+      .className = "success";
+
+    document.getElementById("photoStatus")
+      .innerHTML =
+        "✅ GAMBAR BERJAYA DISIMPAN";
+
+
+    document.getElementById("saveButton")
+      .classList.add("hidden");
+
+
+    document.getElementById("retakeButton")
+      .classList.add("hidden");
+
+
+    document.getElementById("photoNote")
+      .innerHTML =
+        "Gambar telah disimpan ke DATA MURID.";
+
+  })
+
+  .catch(function(error) {
+
+    console.error(error);
+
+    document.getElementById("photoStatus")
+      .className = "error";
+
+    document.getElementById("photoStatus")
+      .innerHTML =
+        "❌ Gagal menyimpan gambar.<br>" +
+        escapeHtml(error.message);
+
+  })
+
+  .finally(function() {
+
+    saveButton.disabled = false;
+
+  });
+
+}
+
+
+// ============================================================
+// HENTIKAN KAMERA GAMBAR
+// ============================================================
+
+function hentikanKameraGambar() {
+
+  if (!photoStream) {
+    return;
+  }
+
+
+  photoStream
+    .getTracks()
+    .forEach(function(track) {
+
+      track.stop();
+
+    });
+
+
+  photoStream = null;
+
+
+  const video =
+    document.getElementById("photoCamera");
+
+
+  video.srcObject = null;
+
+}
+
+
+// ============================================================
+// HENTIKAN SEMUA KAMERA
+// ============================================================
+
+function hentikanSemuaKamera() {
+
+  hentikanScanner();
+
+  hentikanPhotoScanner();
+
+  hentikanKameraGambar();
+
+}
+
+
+// ============================================================
+// KEMBALI MENU
+// ============================================================
+
+function kembaliMenu() {
+
+  hentikanSemuaKamera();
+
+
+  document.getElementById("mainMenu")
+    .classList.remove("hidden");
+
+  document.getElementById("attendanceMode")
+    .classList.add("hidden");
+
+  document.getElementById("photoMode")
+    .classList.add("hidden");
+
+
+  sedangProses = false;
+
+}
+
+
+// ============================================================
 // ESCAPE HTML
-// ==========================================
+// ============================================================
 
 function escapeHtml(text) {
 
   return String(text || "")
+
     .replace(/&/g, "&amp;")
+
     .replace(/</g, "&lt;")
+
     .replace(/>/g, "&gt;")
+
     .replace(/"/g, "&quot;")
+
     .replace(/'/g, "&#039;");
 
 }
