@@ -204,7 +204,15 @@
         📷 MULA SCAN KEHADIRAN
 
       </button>
+<br>
 
+<button
+  class="green"
+  onclick="mulaScanUSB()">
+
+  🔌 SCAN GUNA SCANNER USB
+
+</button>
       <br>
 
       <button
@@ -411,7 +419,104 @@ let photoStream = null;
 let muridUntukGambar = null;
 
 let gambarBase64 = null;
+// ============================================================
+// SCANNER USB
+// ============================================================
 
+let usbBuffer = "";
+let usbTimer = null;
+let usbMode = false;
+
+function mulaScanUSB() {
+
+  // Hentikan kamera jika ada
+  hentikanSemuaKamera();
+
+  // Paparan mode kehadiran
+  document.getElementById("mainMenu")
+    .classList.add("hidden");
+
+  document.getElementById("photoMode")
+    .classList.add("hidden");
+
+  document.getElementById("attendanceMode")
+    .classList.remove("hidden");
+
+  document.getElementById("reader")
+    .innerHTML = "";
+
+  document.getElementById("result")
+    .innerHTML = "";
+
+  document.getElementById("status")
+    .className = "info";
+
+  document.getElementById("status")
+    .innerHTML =
+      "🔌 SCANNER USB SEDIA<br>Sila scan QR murid.";
+
+  sedangProses = false;
+  usbMode = true;
+  usbBuffer = "";
+
+  // Aktifkan penerimaan scanner USB
+  document.addEventListener("keydown", terimaScanUSB);
+}
+
+
+// ============================================================
+// TERIMA KOD DARIPADA SCANNER USB
+// ============================================================
+
+function terimaScanUSB(e) {
+
+  if (!usbMode) {
+    return;
+  }
+
+  // Scanner biasanya hantar ENTER selepas kod QR
+  if (e.key === "Enter") {
+
+    const qrID = usbBuffer.trim();
+
+    usbBuffer = "";
+
+    if (!qrID || sedangProses) {
+      return;
+    }
+
+    prosesQR(qrID);
+
+    return;
+  }
+
+  // Ambil aksara daripada scanner
+  if (e.key.length === 1) {
+
+    usbBuffer += e.key;
+
+    clearTimeout(usbTimer);
+
+    usbTimer = setTimeout(function() {
+      usbBuffer = "";
+    }, 500);
+  }
+}
+
+
+// ============================================================
+// HENTIKAN SCANNER USB
+// ============================================================
+
+function hentikanScannerUSB() {
+
+  usbMode = false;
+  usbBuffer = "";
+
+  clearTimeout(usbTimer);
+
+  document.removeEventListener("keydown", terimaScanUSB);
+}
 
 // ============================================================
 // MULA SCAN KEHADIRAN
@@ -1467,7 +1572,7 @@ function hentikanSemuaKamera() {
   hentikanPhotoScanner();
 
   hentikanKameraGambar();
-
+hentikanScannerUSB();
 }
 
 
