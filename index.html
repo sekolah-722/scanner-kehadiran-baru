@@ -466,11 +466,15 @@ function mulaScanUSB() {
 
     document.body.appendChild(input);
 
-    input.addEventListener("input", terimaInputUSB);
-
     input.addEventListener("keydown", function(e) {
+
+      if (!usbMode) return;
+
       if (e.key === "Enter") {
+
         e.preventDefault();
+        e.stopPropagation();
+
         prosesInputUSB();
       }
     });
@@ -482,59 +486,81 @@ function mulaScanUSB() {
   document.addEventListener("click", fokusSemulaUSB);
 }
 
-function terimaInputUSB(e) {
 
-  if (!usbMode) return;
-
-  clearTimeout(usbTimer);
-
-  usbTimer = setTimeout(function() {
-    prosesInputUSB();
-  }, 300);
-}
+// ============================================================
+// PROSES INPUT SCANNER USB
+// ============================================================
 
 function prosesInputUSB() {
 
-  if (!usbMode || sedangProses) return;
+  if (!usbMode || sedangProses) {
+    return;
+  }
 
   const input = document.getElementById("usbInput");
-  if (!input) return;
+
+  if (!input) {
+    return;
+  }
 
   const qrID = input.value.trim();
-  if (!qrID) return;
 
+  if (!qrID) {
+    return;
+  }
+
+  // KOSONGKAN INPUT DAHULU
   input.value = "";
 
+  // KUNCI SEBELUM HANTAR KE API
+  sedangProses = true;
+
+  document.getElementById("status").className = "info";
   document.getElementById("status").innerHTML =
     "🔌 KOD SCANNER DITERIMA: <b>" +
     escapeHtml(qrID) +
     "</b><br>⏳ Menghantar ke sistem...";
 
+  // HANTAR SEKALI SAHAJA
   prosesQR(qrID);
 }
 
+
+// ============================================================
+// KEKALKAN FOKUS UNTUK SCANNER
+// ============================================================
+
 function fokusSemulaUSB() {
 
-  if (!usbMode || sedangProses) return;
+  if (!usbMode || sedangProses) {
+    return;
+  }
 
   const input = document.getElementById("usbInput");
-  if (input) input.focus();
+
+  if (input) {
+    input.focus();
+  }
 }
+
+
+// ============================================================
+// HENTIKAN SCANNER USB
+// ============================================================
 
 function hentikanScannerUSB() {
 
   usbMode = false;
   usbBuffer = "";
 
-  clearTimeout(usbTimer);
-
-  document.removeEventListener("click", fokusSemulaUSB);
-
   const input = document.getElementById("usbInput");
+
   if (input) {
     input.value = "";
     input.blur();
   }
+
+  document.removeEventListener("click", fokusSemulaUSB);
 }
 
 // ============================================================
