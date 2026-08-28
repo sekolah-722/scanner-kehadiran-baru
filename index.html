@@ -475,25 +475,20 @@ function terimaScanUSB(e) {
   }
 
   // Scanner biasanya hantar ENTER selepas kod QR
- if (e.key === "Enter") {
+  if (e.key === "Enter") {
 
-  const qrID = usbBuffer.trim();
+    const qrID = usbBuffer.trim();
 
-  usbBuffer = "";
+    usbBuffer = "";
 
-  if (!qrID || sedangProses) {
-    return;
-  }
+    if (!qrID || sedangProses) {
+      return;
+    }
 
-  document.getElementById("status").innerHTML =
-    "🔌 KOD SCANNER DITERIMA: <b>" +
-    escapeHtml(qrID) +
-    "</b><br>⏳ Menghantar ke sistem...";
-
-  prosesQR(qrID);
-
-  return;
-}
+    document.getElementById("status").innerHTML =
+      "🔌 KOD SCANNER DITERIMA: <b>" +
+      escapeHtml(qrID) +
+      "</b><br>⏳ Menghantar ke sistem...";
 
     prosesQR(qrID);
 
