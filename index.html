@@ -429,89 +429,97 @@ let usbMode = false;
 
 function mulaScanUSB() {
 
-  // Hentikan kamera jika ada
   hentikanSemuaKamera();
 
-  // Paparan mode kehadiran
-  document.getElementById("mainMenu")
-    .classList.add("hidden");
+  document.getElementById("mainMenu").classList.add("hidden");
+  document.getElementById("photoMode").classList.add("hidden");
+  document.getElementById("attendanceMode").classList.remove("hidden");
 
-  document.getElementById("photoMode")
-    .classList.add("hidden");
+  document.getElementById("reader").innerHTML = "";
+  document.getElementById("result").innerHTML = "";
 
-  document.getElementById("attendanceMode")
-    .classList.remove("hidden");
-
-  document.getElementById("reader")
-    .innerHTML = "";
-
-  document.getElementById("result")
-    .innerHTML = "";
-
-  document.getElementById("status")
-    .className = "info";
-
-  document.getElementById("status")
-    .innerHTML =
-      "🔌 SCANNER USB SEDIA<br>Sila scan QR murid.";
+  document.getElementById("status").className = "info";
+  document.getElementById("status").innerHTML =
+    "🔌 SCANNER USB SEDIA<br>Sila scan QR murid.";
 
   sedangProses = false;
   usbMode = true;
   usbBuffer = "";
 
-  // Aktifkan penerimaan scanner USB
-  document.addEventListener("keydown", terimaScanUSB);
+  let input = document.getElementById("usbInput");
+
+  if (!input) {
+    input = document.createElement("input");
+    input.id = "usbInput";
+    input.type = "text";
+    input.autocomplete = "off";
+    input.autocorrect = "off";
+    input.autocapitalize = "off";
+    input.spellcheck = false;
+
+    input.style.position = "fixed";
+    input.style.left = "-10000px";
+    input.style.top = "0";
+    input.style.width = "1px";
+    input.style.height = "1px";
+    input.style.opacity = "0";
+
+    document.body.appendChild(input);
+
+    input.addEventListener("input", terimaInputUSB);
+
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        prosesInputUSB();
+      }
+    });
+  }
+
+  input.value = "";
+  input.focus();
+
+  document.addEventListener("click", fokusSemulaUSB);
 }
 
+function terimaInputUSB(e) {
 
-// ============================================================
-// TERIMA KOD DARIPADA SCANNER USB
-// ============================================================
+  if (!usbMode) return;
 
-function terimaScanUSB(e) {
+  clearTimeout(usbTimer);
 
-  if (!usbMode) {
-    return;
-  }
-
-  // Scanner biasanya hantar ENTER selepas kod QR
-  if (e.key === "Enter") {
-
-    const qrID = usbBuffer.trim();
-
-    usbBuffer = "";
-
-    if (!qrID || sedangProses) {
-      return;
-    }
-
-    document.getElementById("status").innerHTML =
-      "🔌 KOD SCANNER DITERIMA: <b>" +
-      escapeHtml(qrID) +
-      "</b><br>⏳ Menghantar ke sistem...";
-
-    prosesQR(qrID);
-
-    return;
-  }
-
-  // Ambil aksara daripada scanner
-  if (e.key.length === 1) {
-
-    usbBuffer += e.key;
-
-    clearTimeout(usbTimer);
-
-    usbTimer = setTimeout(function() {
-      usbBuffer = "";
-    }, 500);
-  }
+  usbTimer = setTimeout(function() {
+    prosesInputUSB();
+  }, 300);
 }
 
+function prosesInputUSB() {
 
-// ============================================================
-// HENTIKAN SCANNER USB
-// ============================================================
+  if (!usbMode || sedangProses) return;
+
+  const input = document.getElementById("usbInput");
+  if (!input) return;
+
+  const qrID = input.value.trim();
+  if (!qrID) return;
+
+  input.value = "";
+
+  document.getElementById("status").innerHTML =
+    "🔌 KOD SCANNER DITERIMA: <b>" +
+    escapeHtml(qrID) +
+    "</b><br>⏳ Menghantar ke sistem...";
+
+  prosesQR(qrID);
+}
+
+function fokusSemulaUSB() {
+
+  if (!usbMode || sedangProses) return;
+
+  const input = document.getElementById("usbInput");
+  if (input) input.focus();
+}
 
 function hentikanScannerUSB() {
 
@@ -520,7 +528,13 @@ function hentikanScannerUSB() {
 
   clearTimeout(usbTimer);
 
-  document.removeEventListener("keydown", terimaScanUSB);
+  document.removeEventListener("click", fokusSemulaUSB);
+
+  const input = document.getElementById("usbInput");
+  if (input) {
+    input.value = "";
+    input.blur();
+  }
 }
 
 // ============================================================
