@@ -6,6 +6,9 @@
 
   <title>Scanner Kehadiran SK Seri Serdang</title>
 
+  <meta name="theme-color" content="#1976d2">
+  <meta name="description" content="Scanner Kehadiran SK Seri Serdang - Offline First">
+
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
@@ -246,6 +249,12 @@
 
       </div>
 
+      <div id="offlineStatus"
+           class="note"
+           style="margin-top:10px;font-weight:bold;">
+        🟢 ONLINE — Tiada rekod menunggu
+      </div>
+
       <div id="result"></div>
 
       <button
@@ -405,6 +414,144 @@ const API_URL =
 
 
 // ============================================================
+// OFFLINE-FIRST / PWA
+// ============================================================
+
+const APP_CACHE_NAME = "sk-seri-serdang-scanner-v1";
+
+async function daftarOfflineApp() {
+
+  if (!("serviceWorker" in navigator)) {
+    console.warn("Browser ini tidak menyokong Service Worker.");
+    return;
+  }
+
+  // Service Worker inline tidak boleh didaftarkan secara terus.
+  // Kita gunakan Blob supaya fail HTML ini kekal satu fail.
+  const workerCode = `
+    const CACHE_NAME = "${APP_CACHE_NAME}";
+
+    self.addEventListener("install", event => {
+      self.skipWaiting();
+    });
+
+    self.addEventListener("activate", event => {
+      event.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(
+            keys
+              .filter(key => key !== CACHE_NAME)
+              .map(key => caches.delete(key))
+          )
+        ).then(() => self.clients.claim())
+      );
+    });
+
+    self.addEventListener("fetch", event => {
+
+      const request = event.request;
+
+      // Untuk navigasi, cuba cache dahulu supaya halaman
+      // boleh dibuka semula ketika tiada internet.
+      if (request.mode === "navigate") {
+
+        event.respondWith(
+          caches.match(request).then(cached => {
+
+            if (cached) {
+              return cached;
+            }
+
+            return fetch(request)
+              .then(response => {
+
+                if (response && response.ok) {
+
+                  const copy = response.clone();
+
+                  caches.open(CACHE_NAME)
+                    .then(cache => cache.put(request, copy));
+
+                }
+
+                return response;
+
+              })
+              .catch(() => caches.match(location.href));
+
+          })
+        );
+
+        return;
+      }
+
+      // Untuk aset same-origin, cache selepas berjaya dimuatkan.
+      if (new URL(request.url).origin === location.origin) {
+
+        event.respondWith(
+          caches.match(request).then(cached => {
+
+            if (cached) {
+              return cached;
+            }
+
+            return fetch(request)
+              .then(response => {
+
+                if (response && response.ok) {
+
+                  const copy = response.clone();
+
+                  caches.open(CACHE_NAME)
+                    .then(cache => cache.put(request, copy));
+
+                }
+
+                return response;
+
+              });
+
+          })
+        );
+
+      }
+
+    });
+  `;
+
+  try {
+
+    const blob =
+      new Blob([workerCode], {
+        type: "text/javascript"
+      });
+
+    const workerURL =
+      URL.createObjectURL(blob);
+
+    const registration =
+      await navigator.serviceWorker.register(
+        workerURL
+      );
+
+    console.log(
+      "Offline-first Service Worker didaftarkan.",
+      registration
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Service Worker tidak dapat didaftarkan:",
+      error
+    );
+
+  }
+
+}
+
+
+// ============================================================
 // PEMBOLEH UBAH
 // ============================================================
 
@@ -419,6 +566,309 @@ let photoStream = null;
 let muridUntukGambar = null;
 
 let gambarBase64 = null;
+// ============================================================
+// OFFLINE QUEUE
+// ============================================================
+
+const OFFLINE_QUEUE_KEY = "SK_SERI_SERDANG_OFFLINE_QUEUE_V1";
+let syncSedangBerjalan = false;
+let onlineTimer = null;
+
+function getOfflineQueue() {
+  try {
+    const data = JSON.parse(
+      localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]"
+    );
+
+    return Array.isArray(data) ? data : [];
+
+  } catch (error) {
+
+    console.error("Gagal membaca offline queue:", error);
+    return [];
+
+  }
+}
+
+function setOfflineQueue(queue) {
+
+  localStorage.setItem(
+    OFFLINE_QUEUE_KEY,
+    JSON.stringify(queue)
+  );
+
+  kemasKiniOfflineStatus();
+
+}
+
+function tambahOfflineQueue(qrID) {
+
+  const queue = getOfflineQueue();
+
+  queue.push({
+    qr: String(qrID || "").trim(),
+    masaSimpan: new Date().toISOString()
+  });
+
+  setOfflineQueue(queue);
+
+}
+
+function kemasKiniOfflineStatus() {
+
+  const el = document.getElementById("offlineStatus");
+
+  if (!el) return;
+
+  const queue = getOfflineQueue();
+
+  if (!navigator.onLine) {
+
+    el.style.color = "#d93025";
+    el.innerHTML =
+      "🔴 OFFLINE" +
+      (queue.length
+        ? " — " + queue.length + " rekod menunggu"
+        : " — Tiada rekod menunggu");
+
+    return;
+
+  }
+
+  el.style.color = "#188038";
+
+  if (syncSedangBerjalan) {
+
+    el.innerHTML =
+      "🔄 MENYELARASKAN " +
+      queue.length +
+      " REKOD...";
+
+    return;
+
+  }
+
+  if (queue.length) {
+
+    el.innerHTML =
+      "🟠 ONLINE — " +
+      queue.length +
+      " rekod menunggu";
+
+  } else {
+
+    el.innerHTML =
+      "🟢 ONLINE — Tiada rekod menunggu";
+
+  }
+
+}
+
+function simpanDanMaklumOffline(qrID) {
+
+  tambahOfflineQueue(qrID);
+
+  document.getElementById("status").className = "info";
+
+  document.getElementById("status").innerHTML =
+    "📡 INTERNET TIADA<br>" +
+    "💾 Scan disimpan sementara.<br>" +
+    "Akan dihantar apabila internet kembali.";
+
+  document.getElementById("result").innerHTML = "";
+
+  resetScanner();
+
+}
+
+function hantarSatuQueue(qrID) {
+
+  return new Promise(function(resolve) {
+
+    const callbackName =
+      "hasilQueue_" +
+      Date.now() +
+      "_" +
+      Math.random().toString(36).slice(2);
+
+    const script =
+      document.createElement("script");
+
+    let selesai = false;
+
+    function bersihkanDanSelesai(result) {
+
+      if (selesai) return;
+
+      selesai = true;
+
+      clearTimeout(timeout);
+
+      delete window[callbackName];
+
+      if (script.parentNode) {
+        script.remove();
+      }
+
+      resolve(result);
+
+    }
+
+    window[callbackName] =
+      function(response) {
+
+        // Apps Script sudah memberi respons.
+        // Sama ada success atau already, server telah
+        // menerima QR tersebut.
+        bersihkanDanSelesai({
+          ok: true,
+          response: response
+        });
+
+      };
+
+    script.id = callbackName;
+
+    script.src =
+      API_URL +
+      "?action=scan" +
+      "&qr=" +
+      encodeURIComponent(qrID) +
+      "&callback=" +
+      callbackName;
+
+    script.onerror = function() {
+
+      bersihkanDanSelesai({
+        ok: false
+      });
+
+    };
+
+    const timeout = setTimeout(function() {
+
+      bersihkanDanSelesai({
+        ok: false
+      });
+
+    }, 15000);
+
+    document.body.appendChild(script);
+
+  });
+
+}
+
+
+async function syncOfflineQueue() {
+
+  if (syncSedangBerjalan) return;
+
+  if (!navigator.onLine) {
+
+    kemasKiniOfflineStatus();
+    return;
+
+  }
+
+  let queue = getOfflineQueue();
+
+  if (!queue.length) {
+
+    kemasKiniOfflineStatus();
+    return;
+
+  }
+
+  syncSedangBerjalan = true;
+  kemasKiniOfflineStatus();
+
+  while (queue.length && navigator.onLine) {
+
+    const item = queue[0];
+
+    const hasil =
+      await hantarSatuQueue(item.qr);
+
+    if (!hasil.ok) {
+
+      // Jangan buang item jika gagal.
+      break;
+
+    }
+
+    // Hanya buang item pertama selepas Apps Script
+    // memberi respons.
+    queue.shift();
+
+    localStorage.setItem(
+      OFFLINE_QUEUE_KEY,
+      JSON.stringify(queue)
+    );
+
+    kemasKiniOfflineStatus();
+
+  }
+
+  syncSedangBerjalan = false;
+
+  kemasKiniOfflineStatus();
+
+  if (!queue.length) {
+
+    const status =
+      document.getElementById("status");
+
+    if (status) {
+
+      status.className = "success";
+
+      status.innerHTML =
+        "✅ SEMUA REKOD OFFLINE TELAH DISEGERAKAN";
+
+    }
+
+  }
+
+}
+
+
+function mulaPantauInternet() {
+
+  kemasKiniOfflineStatus();
+
+  window.addEventListener("online", function() {
+
+    kemasKiniOfflineStatus();
+
+    clearTimeout(onlineTimer);
+
+    onlineTimer = setTimeout(
+      syncOfflineQueue,
+      800
+    );
+
+  });
+
+  window.addEventListener("offline", function() {
+
+    kemasKiniOfflineStatus();
+
+  });
+
+  setInterval(function() {
+
+    if (navigator.onLine) {
+      syncOfflineQueue();
+    } else {
+      kemasKiniOfflineStatus();
+    }
+
+  }, 15000);
+
+}
+
+
 // ============================================================
 // SCANNER USB
 // ============================================================
@@ -698,6 +1148,23 @@ function hentikanScanner() {
 
 function prosesQR(qrID) {
 
+  qrID = String(qrID || "").trim();
+
+  if (!qrID) {
+
+    sedangProses = false;
+    return;
+
+  }
+
+  // Jika tiada internet, simpan terus ke queue.
+  if (!navigator.onLine) {
+
+    simpanDanMaklumOffline(qrID);
+    return;
+
+  }
+
   document.getElementById("status")
     .className = "info";
 
@@ -709,9 +1176,13 @@ function prosesQR(qrID) {
   const callbackName =
     "hasilScan_" + Date.now();
 
+  let networkTimeout;
+
 
   window[callbackName] =
     function(response) {
+
+      clearTimeout(networkTimeout);
 
       paparKeputusan(response);
 
@@ -746,20 +1217,32 @@ function prosesQR(qrID) {
   script.onerror =
     function() {
 
+      clearTimeout(networkTimeout);
+
       delete window[callbackName];
 
-      script.remove();
+      if (script.parentNode) {
+        script.remove();
+      }
 
-      document.getElementById("status")
-        .className = "error";
-
-      document.getElementById("status")
-        .innerHTML =
-          "❌ Sistem tidak dapat dihubungi.";
-
-      resetScanner();
+      simpanDanMaklumOffline(qrID);
 
     };
+
+
+  // Jika sambungan tergantung terlalu lama,
+  // simpan QR ke queue supaya scan tidak tersekat.
+  networkTimeout = setTimeout(function() {
+
+    delete window[callbackName];
+
+    if (script.parentNode) {
+      script.remove();
+    }
+
+    simpanDanMaklumOffline(qrID);
+
+  }, 10000);
 
 
   document.body.appendChild(script);
@@ -1664,6 +2147,20 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 
 }
+
+
+// ============================================================
+// MULAKAN PEMANTAUAN OFFLINE QUEUE
+// ============================================================
+
+mulaPantauInternet();
+
+
+// ============================================================
+// AKTIFKAN OFFLINE-FIRST
+// ============================================================
+
+daftarOfflineApp();
 
 </script>
 
