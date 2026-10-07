@@ -64,11 +64,25 @@
       transform: scale(.97);
     }
 
-    .blue { background: #1976d2; }
-    .purple { background: #8e24aa; }
-    .green { background: #188038; }
-    .red { background: #d93025; }
-    .gray { background: #757575; }
+    .blue {
+      background: #1976d2;
+    }
+
+    .purple {
+      background: #8e24aa;
+    }
+
+    .green {
+      background: #188038;
+    }
+
+    .red {
+      background: #d93025;
+    }
+
+    .gray {
+      background: #757575;
+    }
 
     #reader,
     #photoReader {
@@ -93,7 +107,9 @@
       display: none;
     }
 
-    #photoCanvas { display: none; }
+    #photoCanvas {
+      display: none;
+    }
 
     #status,
     #photoStatus {
@@ -104,9 +120,20 @@
       font-weight: bold;
     }
 
-    .info { background: #e8f1fb; color: #1976d2; }
-    .success { background: #e8f5e9; color: #188038; }
-    .error { background: #ffebee; color: #d93025; }
+    .info {
+      background: #e8f1fb;
+      color: #1976d2;
+    }
+
+    .success {
+      background: #e8f5e9;
+      color: #188038;
+    }
+
+    .error {
+      background: #ffebee;
+      color: #d93025;
+    }
 
     .student {
       margin-top: 20px;
@@ -115,7 +142,9 @@
       background: #e8f5e9;
     }
 
-    .photoStudent { background: #f3e5f5; }
+    .photoStudent {
+      background: #f3e5f5;
+    }
 
     .nama {
       font-size: 27px;
@@ -123,7 +152,9 @@
       color: #188038;
     }
 
-    .photoStudent .nama { color: #8e24aa; }
+    .photoStudent .nama {
+      color: #8e24aa;
+    }
 
     .detail {
       margin-top: 9px;
@@ -131,7 +162,9 @@
       font-weight: bold;
     }
 
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     .modeTitle {
       font-size: 25px;
@@ -154,31 +187,54 @@
 <div class="container">
 
   <h1>📱 SCANNER KEHADIRAN</h1>
+
   <h2>SK SERI SERDANG</h2>
+
 
   <div class="card">
 
+
+    <!-- =====================================================
+         MENU UTAMA
+         ===================================================== -->
+
     <div id="mainMenu">
 
-      <button class="blue" onclick="mulaScan()">
+      <button
+        class="blue"
+        onclick="mulaScan()">
+
         📷 MULA SCAN KEHADIRAN
-      </button>
 
+      </button>
+<br>
+
+<button
+  class="green"
+  onclick="mulaScanUSB()">
+
+  🔌 SCAN GUNA SCANNER USB
+
+</button>
       <br>
 
-      <button class="green" onclick="mulaScanUSB()">
-        🔌 SCAN GUNA SCANNER USB
-      </button>
+      <button
+        class="purple"
+        onclick="mulaModeGambar()">
 
-      <br>
-
-      <button class="purple" onclick="mulaModeGambar()">
         📸 AMBIL / KEMAS KINI GAMBAR MURID
+
       </button>
 
     </div>
 
-    <div id="attendanceMode" class="hidden">
+
+    <!-- =====================================================
+         MODE KEHADIRAN
+         ===================================================== -->
+
+    <div id="attendanceMode"
+         class="hidden">
 
       <div class="modeTitle">
         📷 SCAN KEHADIRAN
@@ -186,8 +242,11 @@
 
       <div id="reader"></div>
 
-      <div id="status" class="info">
+      <div id="status"
+           class="info">
+
         Tekan mula scan.
+
       </div>
 
       <div id="offlineStatus"
@@ -203,36 +262,65 @@
         class="blue"
         onclick="mulaScan()"
         style="display:none;">
+
         📷 SCAN MURID SETERUSNYA
+
       </button>
 
       <br>
 
-      <button class="gray" onclick="kembaliMenu()">
+      <button
+        class="gray"
+        onclick="kembaliMenu()">
+
         ↩️ KEMBALI
+
       </button>
 
     </div>
 
-    <div id="photoMode" class="hidden">
+
+    <!-- =====================================================
+         MODE GAMBAR
+         ===================================================== -->
+
+    <div id="photoMode"
+         class="hidden">
 
       <div class="modeTitle">
         📸 GAMBAR MURID
       </div>
 
-      <div id="photoStatus" class="info">
+      <div id="photoStatus"
+           class="info">
+
         Scan QR murid untuk cari pelajar.
+
       </div>
 
+
+      <!-- QR SCANNER GAMBAR -->
+
       <div id="photoReader"></div>
+
+
+      <!-- MAKLUMAT MURID -->
 
       <div id="photoStudent"
            class="student photoStudent hidden">
 
-        <div id="photoName" class="nama"></div>
-        <div id="photoDetail" class="detail"></div>
+        <div id="photoName"
+             class="nama">
+        </div>
+
+        <div id="photoDetail"
+             class="detail">
+        </div>
 
       </div>
+
+
+      <!-- KAMERA -->
 
       <video
         id="photoCamera"
@@ -241,41 +329,70 @@
         class="hidden">
       </video>
 
+
       <canvas id="photoCanvas"></canvas>
+
+
+      <!-- PREVIEW -->
 
       <img
         id="photoPreview"
         alt="Preview gambar murid">
 
-      <div id="photoNote" class="note hidden">
+
+      <div
+        id="photoNote"
+        class="note hidden">
+
         Pastikan muka murid jelas dan berada di tengah kamera.
+
       </div>
+
+
+      <!-- AMBIL -->
 
       <button
         id="captureButton"
         class="red hidden"
         onclick="ambilGambar()">
+
         📸 AMBIL GAMBAR
+
       </button>
+
+
+      <!-- SIMPAN -->
 
       <button
         id="saveButton"
         class="green hidden"
         onclick="simpanGambar()">
+
         💾 SIMPAN GAMBAR
+
       </button>
+
+
+      <!-- AMBIL SEMULA -->
 
       <button
         id="retakeButton"
         class="red hidden"
         onclick="ambilSemula()">
+
         🔄 AMBIL SEMULA
+
       </button>
+
 
       <br>
 
-      <button class="gray" onclick="kembaliMenu()">
+      <button
+        class="gray"
+        onclick="kembaliMenu()">
+
         ↩️ KEMBALI
+
       </button>
 
     </div>
@@ -284,7 +401,9 @@
 
 </div>
 
+
 <script>
+
 
 // ============================================================
 // API APPS SCRIPT
@@ -298,8 +417,7 @@ const API_URL =
 // OFFLINE-FIRST / PWA
 // ============================================================
 
-// v2 supaya browser tidak terus menggunakan cache HTML lama.
-const APP_CACHE_NAME = "sk-seri-serdang-scanner-v2";
+const APP_CACHE_NAME = "sk-seri-serdang-scanner-v1";
 
 async function daftarOfflineApp() {
 
@@ -308,6 +426,8 @@ async function daftarOfflineApp() {
     return;
   }
 
+  // Service Worker inline tidak boleh didaftarkan secara terus.
+  // Kita gunakan Blob supaya fail HTML ini kekal satu fail.
   const workerCode = `
     const CACHE_NAME = "${APP_CACHE_NAME}";
 
@@ -331,30 +451,41 @@ async function daftarOfflineApp() {
 
       const request = event.request;
 
+      // Untuk navigasi, cuba cache dahulu supaya halaman
+      // boleh dibuka semula ketika tiada internet.
       if (request.mode === "navigate") {
 
         event.respondWith(
-          fetch(request)
-            .then(response => {
+          caches.match(request).then(cached => {
 
-              if (response && response.ok) {
-                const copy = response.clone();
-                caches.open(CACHE_NAME)
-                  .then(cache => cache.put(request, copy));
-              }
+            if (cached) {
+              return cached;
+            }
 
-              return response;
+            return fetch(request)
+              .then(response => {
 
-            })
-            .catch(() =>
-              caches.match(request)
-                .then(cached => cached || caches.match(location.href))
-            )
+                if (response && response.ok) {
+
+                  const copy = response.clone();
+
+                  caches.open(CACHE_NAME)
+                    .then(cache => cache.put(request, copy));
+
+                }
+
+                return response;
+
+              })
+              .catch(() => caches.match(location.href));
+
+          })
         );
 
         return;
       }
 
+      // Untuk aset same-origin, cache selepas berjaya dimuatkan.
       if (new URL(request.url).origin === location.origin) {
 
         event.respondWith(
@@ -368,9 +499,12 @@ async function daftarOfflineApp() {
               .then(response => {
 
                 if (response && response.ok) {
+
                   const copy = response.clone();
+
                   caches.open(CACHE_NAME)
                     .then(cache => cache.put(request, copy));
+
                 }
 
                 return response;
@@ -396,7 +530,9 @@ async function daftarOfflineApp() {
       URL.createObjectURL(blob);
 
     const registration =
-      await navigator.serviceWorker.register(workerURL);
+      await navigator.serviceWorker.register(
+        workerURL
+      );
 
     console.log(
       "Offline-first Service Worker didaftarkan.",
@@ -420,13 +556,16 @@ async function daftarOfflineApp() {
 // ============================================================
 
 let scanner = null;
+
 let photoScanner = null;
+
 let sedangProses = false;
+
 let photoStream = null;
+
 let muridUntukGambar = null;
+
 let gambarBase64 = null;
-
-
 // ============================================================
 // OFFLINE QUEUE
 // ============================================================
@@ -436,9 +575,7 @@ let syncSedangBerjalan = false;
 let onlineTimer = null;
 
 function getOfflineQueue() {
-
   try {
-
     const data = JSON.parse(
       localStorage.getItem(OFFLINE_QUEUE_KEY) || "[]"
     );
@@ -451,7 +588,6 @@ function getOfflineQueue() {
     return [];
 
   }
-
 }
 
 function setOfflineQueue(queue) {
@@ -465,22 +601,13 @@ function setOfflineQueue(queue) {
 
 }
 
-
-// PENTING:
-// Timestamp ditangkap ketika QR dibaca dan disimpan bersama queue.
-function tambahOfflineQueue(qrID, masaScanAsal) {
+function tambahOfflineQueue(qrID) {
 
   const queue = getOfflineQueue();
 
-  const masaScan =
-    masaScanAsal instanceof Date
-      ? masaScanAsal
-      : new Date();
-
   queue.push({
     qr: String(qrID || "").trim(),
-    masaSimpan: masaScan.toISOString(),
-    scanEpochMs: masaScan.getTime()
+    masaSimpan: new Date().toISOString()
   });
 
   setOfflineQueue(queue);
@@ -498,7 +625,6 @@ function kemasKiniOfflineStatus() {
   if (!navigator.onLine) {
 
     el.style.color = "#d93025";
-
     el.innerHTML =
       "🔴 OFFLINE" +
       (queue.length
@@ -538,9 +664,9 @@ function kemasKiniOfflineStatus() {
 
 }
 
-function simpanDanMaklumOffline(qrID, masaScanAsal) {
+function simpanDanMaklumOffline(qrID) {
 
-  tambahOfflineQueue(qrID, masaScanAsal);
+  tambahOfflineQueue(qrID);
 
   document.getElementById("status").className = "info";
 
@@ -555,9 +681,7 @@ function simpanDanMaklumOffline(qrID, masaScanAsal) {
 
 }
 
-
-// Hantar SELURUH item queue, termasuk masa scan asal.
-function hantarSatuQueue(item) {
+function hantarSatuQueue(qrID) {
 
   return new Promise(function(resolve) {
 
@@ -593,6 +717,9 @@ function hantarSatuQueue(item) {
     window[callbackName] =
       function(response) {
 
+        // Apps Script sudah memberi respons.
+        // Sama ada success atau already, server telah
+        // menerima QR tersebut.
         bersihkanDanSelesai({
           ok: true,
           response: response
@@ -602,17 +729,11 @@ function hantarSatuQueue(item) {
 
     script.id = callbackName;
 
-    // Queue lama mungkin hanya ada masaSimpan.
-    // Queue baru ada masaSimpan + scanEpochMs.
     script.src =
       API_URL +
       "?action=scan" +
       "&qr=" +
-      encodeURIComponent(item.qr || "") +
-      "&scannedAt=" +
-      encodeURIComponent(item.masaSimpan || "") +
-      "&scanEpochMs=" +
-      encodeURIComponent(item.scanEpochMs || "") +
+      encodeURIComponent(qrID) +
       "&callback=" +
       callbackName;
 
@@ -666,31 +787,18 @@ async function syncOfflineQueue() {
 
     const item = queue[0];
 
-    // PENTING: hantar item penuh, bukan QR sahaja.
     const hasil =
-      await hantarSatuQueue(item);
+      await hantarSatuQueue(item.qr);
 
     if (!hasil.ok) {
 
+      // Jangan buang item jika gagal.
       break;
 
     }
 
-    // Jangan buang queue jika server menolak rekod.
-    if (
-      !hasil.response ||
-      (!hasil.response.success && !hasil.response.already)
-    ) {
-
-      console.error(
-        "Server menolak rekod offline:",
-        hasil.response
-      );
-
-      break;
-
-    }
-
+    // Hanya buang item pertama selepas Apps Script
+    // memberi respons.
     queue.shift();
 
     localStorage.setItem(
@@ -791,7 +899,6 @@ function mulaScanUSB() {
   let input = document.getElementById("usbInput");
 
   if (!input) {
-
     input = document.createElement("input");
     input.id = "usbInput";
     input.type = "text";
@@ -819,20 +926,20 @@ function mulaScanUSB() {
         e.stopPropagation();
 
         prosesInputUSB();
-
       }
-
     });
-
   }
 
   input.value = "";
   input.focus();
 
   document.addEventListener("click", fokusSemulaUSB);
-
 }
 
+
+// ============================================================
+// PROSES INPUT SCANNER USB
+// ============================================================
 
 function prosesInputUSB() {
 
@@ -852,21 +959,26 @@ function prosesInputUSB() {
     return;
   }
 
+  // KOSONGKAN INPUT DAHULU
   input.value = "";
 
+  // KUNCI SEBELUM HANTAR KE API
   sedangProses = true;
 
   document.getElementById("status").className = "info";
-
   document.getElementById("status").innerHTML =
     "🔌 KOD SCANNER DITERIMA: <b>" +
     escapeHtml(qrID) +
     "</b><br>⏳ Menghantar ke sistem...";
 
+  // HANTAR SEKALI SAHAJA
   prosesQR(qrID);
-
 }
 
+
+// ============================================================
+// KEKALKAN FOKUS UNTUK SCANNER
+// ============================================================
 
 function fokusSemulaUSB() {
 
@@ -879,9 +991,12 @@ function fokusSemulaUSB() {
   if (input) {
     input.focus();
   }
-
 }
 
+
+// ============================================================
+// HENTIKAN SCANNER USB
+// ============================================================
 
 function hentikanScannerUSB() {
 
@@ -896,9 +1011,7 @@ function hentikanScannerUSB() {
   }
 
   document.removeEventListener("click", fokusSemulaUSB);
-
 }
-
 
 // ============================================================
 // MULA SCAN KEHADIRAN
@@ -917,13 +1030,17 @@ function mulaScan() {
   document.getElementById("attendanceMode")
     .classList.remove("hidden");
 
+
   sedangProses = true;
+
 
   document.getElementById("againButton")
     .style.display = "none";
 
+
   document.getElementById("result")
     .innerHTML = "";
+
 
   document.getElementById("status")
     .className = "info";
@@ -932,8 +1049,10 @@ function mulaScan() {
     .innerHTML =
       "📷 Membuka kamera...";
 
+
   scanner =
     new Html5Qrcode("reader");
+
 
   scanner.start(
 
@@ -960,7 +1079,9 @@ function mulaScan() {
     },
 
     function(errorMessage) {
+
       // Abaikan QR yang belum dikesan.
+
     }
 
   ).catch(function(error) {
@@ -981,6 +1102,10 @@ function mulaScan() {
 
 }
 
+
+// ============================================================
+// HENTIKAN SCANNER KEHADIRAN
+// ============================================================
 
 function hentikanScanner() {
 
@@ -1023,11 +1148,6 @@ function hentikanScanner() {
 
 function prosesQR(qrID) {
 
-  // PENTING:
-  // Masa kehadiran ditangkap SEBAIK fungsi menerima QR.
-  // Masa ini akan digunakan untuk online DAN offline.
-  const masaScanAsal = new Date();
-
   qrID = String(qrID || "").trim();
 
   if (!qrID) {
@@ -1037,13 +1157,10 @@ function prosesQR(qrID) {
 
   }
 
+  // Jika tiada internet, simpan terus ke queue.
   if (!navigator.onLine) {
 
-    simpanDanMaklumOffline(
-      qrID,
-      masaScanAsal
-    );
-
+    simpanDanMaklumOffline(qrID);
     return;
 
   }
@@ -1055,10 +1172,12 @@ function prosesQR(qrID) {
     .innerHTML =
       "⏳ QR dikesan. Sedang semak murid...";
 
+
   const callbackName =
     "hasilScan_" + Date.now();
 
   let networkTimeout;
+
 
   window[callbackName] =
     function(response) {
@@ -1078,23 +1197,22 @@ function prosesQR(qrID) {
 
     };
 
+
   const script =
     document.createElement("script");
 
+
   script.id = callbackName;
 
-  // Hantar masa scan asal kepada Apps Script.
+
   script.src =
     API_URL +
     "?action=scan" +
     "&qr=" +
     encodeURIComponent(qrID) +
-    "&scannedAt=" +
-    encodeURIComponent(masaScanAsal.toISOString()) +
-    "&scanEpochMs=" +
-    encodeURIComponent(masaScanAsal.getTime()) +
     "&callback=" +
     callbackName;
+
 
   script.onerror =
     function() {
@@ -1107,14 +1225,13 @@ function prosesQR(qrID) {
         script.remove();
       }
 
-      // Gunakan timestamp YANG SAMA jika request online gagal.
-      simpanDanMaklumOffline(
-        qrID,
-        masaScanAsal
-      );
+      simpanDanMaklumOffline(qrID);
 
     };
 
+
+  // Jika sambungan tergantung terlalu lama,
+  // simpan QR ke queue supaya scan tidak tersekat.
   networkTimeout = setTimeout(function() {
 
     delete window[callbackName];
@@ -1123,13 +1240,10 @@ function prosesQR(qrID) {
       script.remove();
     }
 
-    // Jangan cipta timestamp baru selepas timeout.
-    simpanDanMaklumOffline(
-      qrID,
-      masaScanAsal
-    );
+    simpanDanMaklumOffline(qrID);
 
   }, 10000);
+
 
   document.body.appendChild(script);
 
@@ -1157,6 +1271,7 @@ function paparKeputusan(response) {
 
   }
 
+
   if (response.already) {
 
     document.getElementById("status")
@@ -1172,6 +1287,7 @@ function paparKeputusan(response) {
 
   }
 
+
   if (!response.success) {
 
     document.getElementById("status")
@@ -1181,6 +1297,7 @@ function paparKeputusan(response) {
       .innerHTML =
         "❌ MURID TIDAK DIJUMPAI";
 
+
     document.getElementById("result")
       .innerHTML =
         "<div class='student'>" +
@@ -1189,11 +1306,13 @@ function paparKeputusan(response) {
         "</div>" +
         "</div>";
 
+
     resetScanner();
 
     return;
 
   }
+
 
   document.getElementById("status")
     .className = "success";
@@ -1201,6 +1320,7 @@ function paparKeputusan(response) {
   document.getElementById("status")
     .innerHTML =
       "✅ KEHADIRAN BERJAYA DIREKOD";
+
 
   paparMurid(response);
 
@@ -1248,6 +1368,7 @@ function paparMurid(response) {
 
       "</div>";
 
+
   resetScanner();
 
 }
@@ -1284,51 +1405,72 @@ function mulaModeGambar() {
   document.getElementById("photoMode")
     .classList.remove("hidden");
 
+
   resetModeGambar();
+
 
   mulaScanQRGambar();
 
 }
 
 
+// ============================================================
+// RESET MODE GAMBAR
+// ============================================================
+
 function resetModeGambar() {
 
   muridUntukGambar = null;
+
   gambarBase64 = null;
+
 
   document.getElementById("photoStudent")
     .classList.add("hidden");
 
+
   document.getElementById("photoCamera")
     .classList.add("hidden");
+
 
   document.getElementById("photoPreview")
     .style.display = "none";
 
+
   document.getElementById("photoNote")
     .classList.add("hidden");
+
 
   document.getElementById("captureButton")
     .classList.add("hidden");
 
+
   document.getElementById("saveButton")
     .classList.add("hidden");
+
 
   document.getElementById("retakeButton")
     .classList.add("hidden");
 
+
   document.getElementById("photoStatus")
     .className = "info";
+
 
   document.getElementById("photoStatus")
     .innerHTML =
       "Scan QR murid untuk cari pelajar.";
+
 
   document.getElementById("photoReader")
     .innerHTML = "";
 
 }
 
+
+// ============================================================
+// SCAN QR UNTUK MODE GAMBAR
+// ============================================================
 
 function mulaScanQRGambar() {
 
@@ -1339,8 +1481,10 @@ function mulaScanQRGambar() {
     .innerHTML =
       "📷 Membuka kamera scan QR...";
 
+
   photoScanner =
     new Html5Qrcode("photoReader");
+
 
   photoScanner.start(
 
@@ -1367,7 +1511,9 @@ function mulaScanQRGambar() {
     },
 
     function(errorMessage) {
+
       // Abaikan QR belum dikesan.
+
     }
 
   ).catch(function(error) {
@@ -1385,6 +1531,10 @@ function mulaScanQRGambar() {
 
 }
 
+
+// ============================================================
+// HENTIKAN SCANNER GAMBAR
+// ============================================================
 
 function hentikanPhotoScanner() {
 
@@ -1423,6 +1573,8 @@ function hentikanPhotoScanner() {
 
 // ============================================================
 // CARI MURID UNTUK GAMBAR
+// PENTING: action=photo
+// TIDAK REKOD KEHADIRAN
 // ============================================================
 
 function cariMuridUntukGambar(qrID) {
@@ -1434,8 +1586,10 @@ function cariMuridUntukGambar(qrID) {
     .innerHTML =
       "⏳ Sedang mencari murid...";
 
+
   const callbackName =
     "hasilPhoto_" + Date.now();
+
 
   window[callbackName] =
     function(response) {
@@ -1453,10 +1607,13 @@ function cariMuridUntukGambar(qrID) {
 
     };
 
+
   const script =
     document.createElement("script");
 
+
   script.id = callbackName;
+
 
   script.src =
     API_URL +
@@ -1465,6 +1622,7 @@ function cariMuridUntukGambar(qrID) {
     encodeURIComponent(qrID) +
     "&callback=" +
     callbackName;
+
 
   script.onerror =
     function() {
@@ -1482,10 +1640,15 @@ function cariMuridUntukGambar(qrID) {
 
     };
 
+
   document.body.appendChild(script);
 
 }
 
+
+// ============================================================
+// PAPAR MURID UNTUK GAMBAR
+// ============================================================
 
 function paparMuridGambar(response) {
 
@@ -1502,11 +1665,14 @@ function paparMuridGambar(response) {
 
   }
 
+
   muridUntukGambar = response;
+
 
   document.getElementById("photoName")
     .innerHTML =
       escapeHtml(response.nama);
+
 
   document.getElementById("photoDetail")
     .innerHTML =
@@ -1519,8 +1685,10 @@ function paparMuridGambar(response) {
       "Tahun: " +
       escapeHtml(response.tahun);
 
+
   document.getElementById("photoStudent")
     .classList.remove("hidden");
+
 
   document.getElementById("photoStatus")
     .className = "success";
@@ -1529,13 +1697,14 @@ function paparMuridGambar(response) {
     .innerHTML =
       "✅ MURID DIJUMPAI";
 
+
   bukaKameraGambar();
 
 }
 
 
 // ============================================================
-// BUKA KAMERA GAMBAR
+// BUKA KAMERA DEPAN
 // ============================================================
 
 function bukaKameraGambar() {
@@ -1555,15 +1724,19 @@ function bukaKameraGambar() {
 
       photoStream = stream;
 
+
       const video =
         document.getElementById("photoCamera");
+
 
       video.srcObject = stream;
 
       video.classList.remove("hidden");
 
+
       document.getElementById("photoNote")
         .classList.remove("hidden");
+
 
       document.getElementById("captureButton")
         .classList.remove("hidden");
@@ -1596,9 +1769,11 @@ function ambilGambar() {
   if (!muridUntukGambar) {
 
     alert("Murid belum dipilih.");
+
     return;
 
   }
+
 
   const video =
     document.getElementById("photoCamera");
@@ -1606,20 +1781,27 @@ function ambilGambar() {
   const canvas =
     document.getElementById("photoCanvas");
 
+
   let width =
     video.videoWidth;
 
   let height =
     video.videoHeight;
 
+
   if (!width || !height) {
 
     alert("Kamera belum bersedia.");
+
     return;
 
   }
 
+
+  // Hadkan saiz gambar supaya fail tidak terlalu besar
+
   const maxWidth = 800;
+
 
   if (width > maxWidth) {
 
@@ -1632,11 +1814,15 @@ function ambilGambar() {
 
   }
 
+
   canvas.width = width;
+
   canvas.height = height;
+
 
   const context =
     canvas.getContext("2d");
+
 
   context.drawImage(
     video,
@@ -1646,30 +1832,39 @@ function ambilGambar() {
     height
   );
 
+
   gambarBase64 =
     canvas.toDataURL(
       "image/jpeg",
       0.75
     );
 
+
   document.getElementById("photoPreview")
     .src = gambarBase64;
+
 
   document.getElementById("photoPreview")
     .style.display = "block";
 
+
   hentikanKameraGambar();
 
+
   video.classList.add("hidden");
+
 
   document.getElementById("captureButton")
     .classList.add("hidden");
 
+
   document.getElementById("saveButton")
     .classList.remove("hidden");
 
+
   document.getElementById("retakeButton")
     .classList.remove("hidden");
+
 
   document.getElementById("photoNote")
     .innerHTML =
@@ -1686,14 +1881,18 @@ function ambilSemula() {
 
   gambarBase64 = null;
 
+
   document.getElementById("photoPreview")
     .style.display = "none";
+
 
   document.getElementById("saveButton")
     .classList.add("hidden");
 
+
   document.getElementById("retakeButton")
     .classList.add("hidden");
+
 
   bukaKameraGambar();
 
@@ -1709,21 +1908,27 @@ function simpanGambar() {
   if (!muridUntukGambar) {
 
     alert("Murid belum dipilih.");
+
     return;
 
   }
+
 
   if (!gambarBase64) {
 
     alert("Sila ambil gambar dahulu.");
+
     return;
 
   }
 
+
   const saveButton =
     document.getElementById("saveButton");
 
+
   saveButton.disabled = true;
+
 
   document.getElementById("photoStatus")
     .className = "info";
@@ -1732,12 +1937,14 @@ function simpanGambar() {
     .innerHTML =
       "💾 Sedang menyimpan gambar...";
 
+
   const fileName =
     muridUntukGambar.id +
     "_" +
     muridUntukGambar.nama
       .replace(/[^a-zA-Z0-9_-]/g, "_") +
     ".jpg";
+
 
   const payload = {
 
@@ -1751,6 +1958,7 @@ function simpanGambar() {
       fileName
 
   };
+
 
   fetch(
     API_URL,
@@ -1793,6 +2001,7 @@ function simpanGambar() {
 
     }
 
+
     if (!result.success) {
 
       throw new Error(
@@ -1802,6 +2011,7 @@ function simpanGambar() {
 
     }
 
+
     document.getElementById("photoStatus")
       .className = "success";
 
@@ -1809,11 +2019,14 @@ function simpanGambar() {
       .innerHTML =
         "✅ GAMBAR BERJAYA DISIMPAN";
 
+
     document.getElementById("saveButton")
       .classList.add("hidden");
 
+
     document.getElementById("retakeButton")
       .classList.add("hidden");
+
 
     document.getElementById("photoNote")
       .innerHTML =
@@ -1854,6 +2067,7 @@ function hentikanKameraGambar() {
     return;
   }
 
+
   photoStream
     .getTracks()
     .forEach(function(track) {
@@ -1862,10 +2076,13 @@ function hentikanKameraGambar() {
 
     });
 
+
   photoStream = null;
+
 
   const video =
     document.getElementById("photoCamera");
+
 
   video.srcObject = null;
 
@@ -1879,10 +2096,11 @@ function hentikanKameraGambar() {
 function hentikanSemuaKamera() {
 
   hentikanScanner();
-  hentikanPhotoScanner();
-  hentikanKameraGambar();
-  hentikanScannerUSB();
 
+  hentikanPhotoScanner();
+
+  hentikanKameraGambar();
+hentikanScannerUSB();
 }
 
 
@@ -1894,6 +2112,7 @@ function kembaliMenu() {
 
   hentikanSemuaKamera();
 
+
   document.getElementById("mainMenu")
     .classList.remove("hidden");
 
@@ -1902,6 +2121,7 @@ function kembaliMenu() {
 
   document.getElementById("photoMode")
     .classList.add("hidden");
+
 
   sedangProses = false;
 
@@ -1917,9 +2137,13 @@ function escapeHtml(text) {
   return String(text || "")
 
     .replace(/&/g, "&amp;")
+
     .replace(/</g, "&lt;")
+
     .replace(/>/g, "&gt;")
+
     .replace(/"/g, "&quot;")
+
     .replace(/'/g, "&#039;");
 
 }
