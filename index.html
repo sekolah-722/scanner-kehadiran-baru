@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ms">
 <head>
@@ -82,6 +83,25 @@
 
     .gray {
       background: #757575;
+    }
+
+    .scan-pantas-label {
+      background: #e8f5e9;
+      color: #176a35;
+      padding: 11px 8px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+
+    .scan-bunyi-button {
+      padding: 9px 15px;
+      font-size: 13px;
+      margin-top: 10px;
+      color: #1976d2;
+      background: #e8f1fb;
+      border: 1px solid #c8ddf4;
     }
 
     #reader,
@@ -240,6 +260,10 @@
         📷 SCAN KEHADIRAN
       </div>
 
+      <div id="scanPantasLabel" class="scan-pantas-label">
+        ⚡ SCAN BERPANTAS · KAMERA KEKAL TERBUKA
+      </div>
+      <button id="toggleBunyiScan" type="button" class="scan-bunyi-button" onclick="tukarBunyiScan()">🔊 SUARA: ON</button>
       <div id="reader"></div>
 
       <div id="status"
@@ -566,6 +590,84 @@ let photoStream = null;
 let muridUntukGambar = null;
 
 let gambarBase64 = null;
+
+// ============================================================
+// KAMERA TELEFON: SCAN BERPANTAS / SUARA TAHNIAH
+// Tiada perubahan kepada API, queue offline, USB atau kamera gambar.
+// ============================================================
+let scanBerterusan = false;
+let scanBolehTerima = false;
+let timerScanSeterusnya = null;
+let qrDalamProses = "";
+let qrSudahDibaca = new Set();
+let suaraScanAktif = true;
+let audioScanContext = null;
+
+// Cubaan membuka audio dari tindakan pengguna (iPhone/Safari).
+function sediaAudioScan() {
+  if (!suaraScanAktif) return;
+  try {
+    const AudioClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioClass && !audioScanContext) audioScanContext = new AudioClass();
+    if (audioScanContext && audioScanContext.state === "suspended") {
+      audioScanContext.resume().catch(function() {});
+    }
+  } catch (error) {
+    console.warn("Audio tidak dapat disediakan:", error);
+  }
+}
+
+function tukarBunyiScan() {
+  suaraScanAktif = !suaraScanAktif;
+  const butang = document.getElementById("toggleBunyiScan");
+  if (butang) butang.textContent = suaraScanAktif ? "🔊 SUARA: ON" : "🔇 SUARA: OFF";
+  if (suaraScanAktif) sediaAudioScan();
+}
+
+function bunyiTahniah() {
+  if (!suaraScanAktif || !scanBerterusan || usbMode) return;
+
+  // Nada ringkas sebagai maklum balas walaupun suara sintesis tidak disokong.
+  try {
+    if (audioScanContext && audioScanContext.state === "running") {
+      const now = audioScanContext.currentTime;
+      [660, 880].forEach(function(freq, index) {
+        const oscillator = audioScanContext.createOscillator();
+        const volume = audioScanContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = freq;
+        volume.gain.setValueAtTime(0.0001, now + index * 0.12);
+        volume.gain.exponentialRampToValueAtTime(0.14, now + index * 0.12 + 0.018);
+        volume.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.12 + 0.115);
+        oscillator.connect(volume);
+        volume.connect(audioScanContext.destination);
+        oscillator.start(now + index * 0.12);
+        oscillator.stop(now + index * 0.12 + 0.12);
+      });
+    }
+  } catch (error) {
+    console.warn("Nada scan tidak dapat dimainkan:", error);
+  }
+
+  // Web Speech bergantung pada sokongan dan tetapan suara telefon.
+  try {
+    if ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) {
+      const ucapan = new SpeechSynthesisUtterance("Tahniah");
+      ucapan.lang = "ms-MY";
+      ucapan.rate = 1.05;
+      ucapan.volume = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(ucapan);
+    }
+  } catch (error) {
+    console.warn("Suara Tahniah tidak dapat dimainkan:", error);
+  }
+}
+
+function simpanQRScanBerterusan() {
+  if (qrDalamProses) qrSudahDibaca.add(qrDalamProses.toUpperCase());
+}
+
 // ============================================================
 // OFFLINE QUEUE
 // ============================================================
@@ -672,7 +774,18 @@ function kemasKiniOfflineStatus() {
 
 function simpanDanMaklumOffline(qrID, masaScanAsal) {
 
-  tambahOfflineQueue(qrID, masaScanAsal);
+  try {
+    tambahOfflineQueue(qrID, masaScanAsal);
+  } catch (error) {
+    console.error("Gagal menyimpan queue offline:", error);
+    document.getElementById("status").className = "error";
+    document.getElementById("status").textContent = "❌ Rekod belum disimpan pada telefon. Semak ruang storan.";
+    resetScanner();
+    return;
+  }
+
+  simpanQRScanBerterusan();
+  bunyiTahniah();
 
   document.getElementById("status").className = "info";
 
@@ -1043,6 +1156,11 @@ function hentikanScannerUSB() {
 function mulaScan() {
 
   hentikanSemuaKamera();
+  scanBerterusan = true;
+  scanBolehTerima = true;
+  qrDalamProses = "";
+  qrSudahDibaca = new Set();
+  sediaAudioScan();
 
   document.getElementById("mainMenu")
     .classList.add("hidden");
@@ -1054,7 +1172,8 @@ function mulaScan() {
     .classList.remove("hidden");
 
 
-  sedangProses = true;
+  // Kamera sentiasa terbuka selepas berjaya membaca satu QR.
+  sedangProses = false;
 
 
   document.getElementById("againButton")
@@ -1094,10 +1213,20 @@ function mulaScan() {
     },
 
     function(decodedText) {
+      if (!scanBerterusan || !scanBolehTerima || sedangProses) return;
 
-      hentikanScanner();
+      const qrID = String(decodedText || "").trim();
+      if (!qrID || qrSudahDibaca.has(qrID.toUpperCase())) return;
 
-      prosesQR(decodedText);
+      // Kunci dahulu sebelum proses supaya frame yang sama tidak menulis rekod berganda.
+      scanBolehTerima = false;
+      sedangProses = true;
+      qrDalamProses = qrID;
+      const masaDikesan = new Date();
+
+      // TIDAK panggil hentikanScanner() di sini.
+      // Kamera kekal berjalan untuk QR murid berikutnya.
+      prosesQR(qrID, masaDikesan);
 
     },
 
@@ -1169,11 +1298,11 @@ function hentikanScanner() {
 // PROSES QR KEHADIRAN
 // ============================================================
 
-function prosesQR(qrID) {
+function prosesQR(qrID, masaDikesan) {
 
-  // Tangkap masa SEKALI ketika QR dikesan.
-  // Masa ini kekal walaupun rekod hanya dapat diupload kemudian.
-  const masaScanAsal = new Date();
+  // Masa ini diambil sebaik QR dikesan oleh kamera, bukan ketika upload.
+  // USB masih menggunakan masa semasa apabila kod diterima.
+  const masaScanAsal = masaDikesan instanceof Date ? masaDikesan : new Date();
 
   qrID = String(qrID || "").trim();
 
@@ -1305,6 +1434,7 @@ function paparKeputusan(response) {
 
   if (response.already) {
 
+    simpanQRScanBerterusan();
     document.getElementById("status")
       .className = "error";
 
@@ -1345,12 +1475,15 @@ function paparKeputusan(response) {
   }
 
 
+  simpanQRScanBerterusan();
+  bunyiTahniah();
+
   document.getElementById("status")
     .className = "success";
 
   document.getElementById("status")
     .innerHTML =
-      "✅ KEHADIRAN BERJAYA DIREKOD";
+      "✅ TAHNIAH! KEHADIRAN BERJAYA DIREKOD";
 
 
   paparMurid(response);
@@ -1411,10 +1544,25 @@ function paparMurid(response) {
 
 function resetScanner() {
 
-  sedangProses = false;
+  if (scanBerterusan && scanner && !usbMode) {
+    // Tunjuk keputusan sekejap, kemudian terima QR lain tanpa hentikan kamera.
+    clearTimeout(timerScanSeterusnya);
+    document.getElementById("againButton").style.display = "none";
+    timerScanSeterusnya = setTimeout(function() {
+      if (!scanBerterusan || !scanner || usbMode) return;
+      qrDalamProses = "";
+      sedangProses = false;
+      scanBolehTerima = true;
+      document.getElementById("status").className = "info";
+      document.getElementById("status").innerHTML =
+        "📷 SEDIA UNTUK MURID SETERUSNYA · TIDAK PERLU TEKAN BUTANG";
+    }, 1300);
+    return;
+  }
 
-  document.getElementById("againButton")
-    .style.display = "inline-block";
+  // Mode lain kekal seperti kod asal.
+  sedangProses = false;
+  document.getElementById("againButton").style.display = "inline-block";
 
 }
 
@@ -2125,6 +2273,12 @@ function hentikanKameraGambar() {
 // ============================================================
 
 function hentikanSemuaKamera() {
+
+  // Bersihkan mod scan berterusan sebelum berpindah ke USB / Gambar / Menu.
+  scanBerterusan = false;
+  scanBolehTerima = false;
+  qrDalamProses = "";
+  clearTimeout(timerScanSeterusnya);
 
   hentikanScanner();
 
