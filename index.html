@@ -601,13 +601,19 @@ function setOfflineQueue(queue) {
 
 }
 
-function tambahOfflineQueue(qrID) {
+function tambahOfflineQueue(qrID, masaScanAsal) {
 
   const queue = getOfflineQueue();
 
+  const masaScan =
+    masaScanAsal instanceof Date
+      ? masaScanAsal
+      : new Date();
+
   queue.push({
     qr: String(qrID || "").trim(),
-    masaSimpan: new Date().toISOString()
+    masaSimpan: masaScan.toISOString(),
+    scanEpochMs: masaScan.getTime()
   });
 
   setOfflineQueue(queue);
@@ -664,9 +670,9 @@ function kemasKiniOfflineStatus() {
 
 }
 
-function simpanDanMaklumOffline(qrID) {
+function simpanDanMaklumOffline(qrID, masaScanAsal) {
 
-  tambahOfflineQueue(qrID);
+  tambahOfflineQueue(qrID, masaScanAsal);
 
   document.getElementById("status").className = "info";
 
@@ -681,7 +687,7 @@ function simpanDanMaklumOffline(qrID) {
 
 }
 
-function hantarSatuQueue(qrID) {
+function hantarSatuQueue(item) {
 
   return new Promise(function(resolve) {
 
@@ -729,11 +735,28 @@ function hantarSatuQueue(qrID) {
 
     script.id = callbackName;
 
+    // Kekalkan masa QR sebenar. Queue lama yang hanya ada
+    // masaSimpan juga ditukar semula kepada epoch di sini.
+    const scannedAt =
+      String((item && item.masaSimpan) || "");
+
+    let scanEpochMs =
+      Number(item && item.scanEpochMs);
+
+    if (!Number.isFinite(scanEpochMs) || scanEpochMs <= 0) {
+      const parsed = Date.parse(scannedAt);
+      scanEpochMs = Number.isFinite(parsed) ? parsed : "";
+    }
+
     script.src =
       API_URL +
       "?action=scan" +
       "&qr=" +
-      encodeURIComponent(qrID) +
+      encodeURIComponent((item && item.qr) || "") +
+      "&scannedAt=" +
+      encodeURIComponent(scannedAt) +
+      "&scanEpochMs=" +
+      encodeURIComponent(scanEpochMs) +
       "&callback=" +
       callbackName;
 
@@ -788,7 +811,7 @@ async function syncOfflineQueue() {
     const item = queue[0];
 
     const hasil =
-      await hantarSatuQueue(item.qr);
+      await hantarSatuQueue(item);
 
     if (!hasil.ok) {
 
@@ -1148,6 +1171,10 @@ function hentikanScanner() {
 
 function prosesQR(qrID) {
 
+  // Tangkap masa SEKALI ketika QR dikesan.
+  // Masa ini kekal walaupun rekod hanya dapat diupload kemudian.
+  const masaScanAsal = new Date();
+
   qrID = String(qrID || "").trim();
 
   if (!qrID) {
@@ -1160,7 +1187,7 @@ function prosesQR(qrID) {
   // Jika tiada internet, simpan terus ke queue.
   if (!navigator.onLine) {
 
-    simpanDanMaklumOffline(qrID);
+    simpanDanMaklumOffline(qrID, masaScanAsal);
     return;
 
   }
@@ -1210,6 +1237,10 @@ function prosesQR(qrID) {
     "?action=scan" +
     "&qr=" +
     encodeURIComponent(qrID) +
+    "&scannedAt=" +
+    encodeURIComponent(masaScanAsal.toISOString()) +
+    "&scanEpochMs=" +
+    encodeURIComponent(masaScanAsal.getTime()) +
     "&callback=" +
     callbackName;
 
@@ -1225,7 +1256,7 @@ function prosesQR(qrID) {
         script.remove();
       }
 
-      simpanDanMaklumOffline(qrID);
+      simpanDanMaklumOffline(qrID, masaScanAsal);
 
     };
 
@@ -1240,7 +1271,7 @@ function prosesQR(qrID) {
       script.remove();
     }
 
-    simpanDanMaklumOffline(qrID);
+    simpanDanMaklumOffline(qrID, masaScanAsal);
 
   }, 10000);
 
